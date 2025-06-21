@@ -1,8 +1,8 @@
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_mobile_news_portal/constant/const.dart';
-import 'package:flutter_mobile_news_portal/models/Category.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter_mobile_news_portal/models/Post.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class CategoryList extends StatefulWidget {
@@ -20,12 +20,12 @@ class CategoryList extends StatefulWidget {
 }
 
 class _NewsListState extends State<CategoryList> {
-  late Future<List<Category>> _futureArticles;
+  late Future<List<Category>> _futureCategories;
 
   @override
   void initState() {
     super.initState();
-    _futureArticles = fetchArticles(widget.apiUrl);
+    _futureCategories = fetchArticles(widget.apiUrl);
   }
 
   Future<List<Category>> fetchArticles(String url) async {
@@ -40,18 +40,18 @@ class _NewsListState extends State<CategoryList> {
         ),
       );
       final rawData = response.data['data'] as List;
-      final articles = rawData.map((item) => Category.fromJson(item)).toList();
-      return articles;
+      final categories = rawData.map((item) => Category.fromJson(item)).toList();
+      return categories;
     } catch (e) {
       log("Fetch Error: $e");
-      throw Exception('Failed to fetch articles');
+      throw Exception('Failed to fetch categories');
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<List<Category>>(
-      future: _futureArticles,
+      future: _futureCategories,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Padding(
@@ -67,7 +67,7 @@ class _NewsListState extends State<CategoryList> {
           );
         }
 
-        final articles = snapshot.data!;
+        final categories = snapshot.data!;
 
         return Padding(
           padding: const EdgeInsets.all(20.0),
@@ -94,9 +94,9 @@ class _NewsListState extends State<CategoryList> {
                 height: 225,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
-                  itemCount: articles.length,
+                  itemCount: categories.length,
                   itemBuilder: (context, index) {
-                    final article = articles[index];
+                    final category = categories[index];
                     return Container(
                       margin: const EdgeInsets.only(right: 10),
                       child: InkWell(
@@ -104,7 +104,7 @@ class _NewsListState extends State<CategoryList> {
                           Navigator.pushNamed(
                             context,
                             "",
-                            arguments: article,
+                            arguments: category,
                           );
                         },
                         child: ClipRRect(
@@ -114,7 +114,7 @@ class _NewsListState extends State<CategoryList> {
                             children: [
                               // Background image
                               Image.network(
-                                article.banner.url,
+                                category.banner?.url ?? 'Tidak ada banner',
                                 height: 500,
                                 width: 180,
                                 fit: BoxFit.cover,
@@ -129,7 +129,7 @@ class _NewsListState extends State<CategoryList> {
 
                               // Text
                               Text(
-                                article.name,
+                                category.name,
                                 style: GoogleFonts.playfairDisplay(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 20,
